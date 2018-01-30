@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-taxdict=dict()
+import collections
+taxdict=collections.OrderedDict()
 try:
     for arg in sys.argv[1:]:
         num=int(arg.split(':')[0])
@@ -28,7 +29,6 @@ def tax_calculator(num,salary):
         tax=income*0.45-13505
     print(num,format((salary*(1-0.08-0.02-0.005-0.06)-tax),".2f"),sep=":")
 if __name__=="__main__":
-    taxdict=sorted(taxdict.keys())
     for key,value in taxdict.items():
         tax_calculator(key,value)
     
