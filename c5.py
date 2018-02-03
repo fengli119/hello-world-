@@ -1,35 +1,50 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
-import sys,getopt
+import sys
 import csv
 from multiprocessing import Process,Queue
-import ConfigParser
-from datetime import date,datetime 
+from datetime import date,datetime
+import getopt
+import configparser
 queue1=Queue()
 queue2=Queue()
-opts=getopt.getopt(sys.argv[1:],"hC:c:d:o:",["help"])
-    for a,b in opts:
-        if a in ('-h','--help'):
-            print('Usage: calculator.py -C cityname -c configfile -d useredata -o resultdata')
-            sys.exit()
-        else:
-            pass
-class Config(self):
-    def 
+class Args(object):
+    def __init__(self):
+        self.args=sys.argv[1:]
     try:
-        configname=self.getargs()[0][1][1]
+        def getargs(self):
+            opts,args=getopt.getopt(self.args,"C:c:d:o:h",["help"])
+            for o, a in opts:
+                if o in ("-h","--help"):
+                    print("Usage: calculator.py -C cityname -c configfile -d userdata -o resultdata")
+                else:
+                    pass
+            return opts
+            print(opts)
+        def getcityname(self):
+            cityname=self.getargs()[0][1].upper()
+            return cityname
+        def getconfigfile(self):
+            configfile=self.getargs()[1][1]
+            return configfile
+        def getuserdatafile(self):
+            userdatafile=self.getargs()[2][1]
+            return userdatafile
+        def getsalaryfile(self):
+            salaryfile=self.getargs()[3][1]
+            return salaryfile
+    except:
+        print("ERROR!")
+class Config(Args):
+    try:
         def _read_config(self):
-            config=ConfigParser.ConfigParser()
-            config.read(configname)
-            if self.getargs()[0][0][1]=='':
-                city=DEFAULT
+            config=configparser.ConfigParser()
+            config.read(self.getconfigfile())
+            if self.getcityname()=='':
+                cityname="DEFAULT"
             else:
-                city=self.getargs()[0][1][1].upper()
-            JiShuL=float(config.get(city,"JishuL"))
-            JiShuH=float(config.get(city,"JishuH"))
-            rate=float(config.get(city,"YangLao"))+float(config.get(city,"YiLiao"))+float(config.get(city,"ShiYe"))+float(config.get(city,"GongShang"))+float(config.get(city,"ShengYu"))+float(config.get(city,"GongJiJin"))
-            return JiShuL,JiShuH,rate
-
+                cityname=self.getcityname()
+            return config[cityname]
     except:
         print("ERROR!")
     
@@ -40,7 +55,7 @@ class UserData(Args):
             a=[]
             b=[]
             c=[]
-            with open(self.getargs()[0][2][1]) as file:
+            with open(self.getuserdatafile()) as file:
                 for x in file:
                     a.append(x.strip())
                 for i in a:
@@ -61,14 +76,18 @@ class IncomeTaxCalculator(Config,UserData):
         income=[]
         tax=[]
         money=[]
+        config=self._read_config()
+        rate=float(config['YangLao'])+float(config['YiLiao'])+float(config['ShiYe'])+float(config['GongShang'])+float(config['ShengYu'])+float(config['GongJiJin'])
+        JiShuL=float(config['JiShuL'])
+        JiShuH=float(config['JiShuH'])
         for s in salary:
             s=float(s)
-            if 0<=s<=self._read_config()[0]:
+            if 0<=s<=JiShuL:
                 insurance.append(0)
-            elif self._read_config()[0]<s<=self._read_config()[1]:
-                insurance.append(s*self._read_config()[2])            
+            elif JiShuL<s<=JiShuH:
+                insurance.append(s*rate)            
             else:
-                insurance.append(self._read_config()[1]*self._read_config()[2])
+                insurance.append(JiShuH*rate)
         for s,i  in zip(salary,insurance):
             s=float(s)
             i=float(i)
@@ -101,8 +120,8 @@ class IncomeTaxCalculator(Config,UserData):
             i=format(float(i),".2f")
             t=format(float(t),".2f")
             m=format(float(m),".2f")
-            time =datetime.now()
-            result.append([n,s,i,t,m,datetime.strftime(time,'%Y%m%d %H%M%S')])
+            time=datetime.now()
+            result.append([n,s,i,t,m,datetime.strftime(time,'%Y-%m-%d %H:%M:%S')])
         queue2.put(result)
     def export(self,default='csv'):
         result=queue2.get()
