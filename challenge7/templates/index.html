@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <title>Index</title>
+    </head>
+    <body>
+        <u1>
+            {% for file in files  %}
+            <li><a herf ="{{url_for('file',file_id=file.id)}}"target="_blank">{{file.title}}</a></li>
+            {% endfor %}
+        </u1>
+    </body>
+</html>
